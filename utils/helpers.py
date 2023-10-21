@@ -77,10 +77,10 @@ def configure_app(app: Flask) -> None:
     """
     Configure the Flask app and SQLAlchemy.
     """
-    app.config['SQLALCHEMY_DATABASE_URI']: str = get_database_uri()
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS']: bool = False
     app.config['SQLALCHEMY_ECHO']: bool = False
     app.config['SECRET_KEY']: str = get_flask_secret()
+    app.config['SQLALCHEMY_DATABASE_URI']: str = get_database_uri()
 
 def get_database_uri() -> str:
     """
@@ -90,6 +90,7 @@ def get_database_uri() -> str:
     @return str: The database URI.
     """
     database_uri: Optional[str] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+    
     if database_uri is None:
         raise EnvironmentNotSetError("SQLALCHEMY_DATABASE_URI is not set.")
     
