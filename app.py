@@ -36,9 +36,10 @@ def get_pet(id: int):
     """
     try:
         pet: Pet = Pet.query.get(id)
-        return jsonify(pet=pet.to_dict())
+        return jsonify(pet=pet.to_dict()), 200
     except Exception as e:
         logger.error(f"app.py::get_pet: Error trying to get one pet: {e}", exc_info=True)
+        return jsonify(error=f"An error occurred when getting your pet: {e}"), 400
 
 @app.route('/pets', methods=['GET'])
 def get_pets():
@@ -47,9 +48,10 @@ def get_pets():
     """
     try:
         pets: List[Animal] = Pet.get_all_pets()
-        return jsonify(pets=[p.to_dict() for p in pets])
+        return jsonify(pets=[p.to_dict() for p in pets]), 200
     except Exception as e:
         logger.error(f"app.py::get_pets: Error trying to get all pets: {e}", exc_info=True)
+        return jsonify(error=f"An error occurred when getting all pets: {e}"), 500
 
 @app.route('/pets', methods=['POST'])
 def create_pet():
