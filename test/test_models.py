@@ -43,6 +43,7 @@ def test_get_all_pets_succeeds(valid_pets) -> None:
     assert len(pets) == 3
     assert all(isinstance(p, Pet) for p in pets)
 
+
 @use_database
 def test_get_one_pet_succeeds(valid_pets) -> None:
     """Test that one pet can be fetched."""
@@ -77,3 +78,19 @@ def test_pet_is_converted_to_dictionary(valid_pets) -> None:
     assert pet_dict['name'] == pet.name
     assert pet_dict['age'] == pet.age
     assert pet_dict['species'] == pet.species
+
+
+@use_database
+def test_get_oldest_pet_succeeds(valid_pets) -> None:
+    """Test that one pet can be fetched."""
+    for animal in valid_pets:
+        Pet.create_pet(animal)
+
+    assert Pet.query.count() == 3
+
+    pet: Pet = Pet.get_oldest_pet()
+    assert pet is not None
+    assert isinstance(pet, Pet)
+    assert pet.name == "Fido"
+    assert pet.age == 5
+    assert pet.species == 1
