@@ -68,3 +68,15 @@ def create_pet():
     except Exception as e:
         logger.error(f"app.py::create_pet: Error trying to create a pet: {e}", exc_info=True)
         return jsonify(error=f"An error occurred when creating your pet: {e}"), 400
+    
+@app.route('/pets/oldest', methods=['GET'])
+def get_oldest_pet():
+    """
+    Get the oldest pet from the database.
+    """
+    try:
+        pet: Animal = Pet.get_oldest_pet()
+        return jsonify(pet=pet.to_dict()), 200
+    except Exception as e:
+        logger.error(f"app.py::get_oldest_pet: Error trying to get oldest pet: {e}", exc_info=True)
+        return jsonify(error=f"An error occurred when getting the oldest pet: {e}"), 500

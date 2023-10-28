@@ -132,6 +132,17 @@ class Pet(db.Model):
         except Exception as e:
             logger.error(f"Pet::get_one_pet - Failed to get pet with id {id}: {e}", exc_info=True)
             return None
+    
+    @staticmethod
+    def get_oldest_pet() -> Self:
+        """
+        Get the oldest pet.
+        """
+        pets: Self = Pet.query.all()
+        if not pets:
+            raise ValueError("No pets in the database.")
+        
+        return max(pets, key=lambda pet: pet.age)
 
     def to_dict(self) -> Dict[str, Union[int, str]]:
         """
@@ -143,3 +154,32 @@ class Pet(db.Model):
             "age": self.age,
             "species": self.species
         }
+    
+    def __repr__(self) -> str:
+        """
+        Return a string representation of the pet object.
+        """
+        return f"<Pet {self.id}: {self.name}, {self.age}, {self.species}>"
+    
+    def __str__(self) -> str:
+        """
+        Return a string representation of the pet object.
+        """
+        return f"<Pet {self.name}, {self.age}, {self.species}>"
+    
+    def __eq__(self, other: Self) -> bool:
+        """
+        Check if two pet objects are equal.
+        """
+        return (
+            self.id == other.id and
+            self.name == other.name and
+            self.age == other.age and
+            self.species == other.species
+        )
+    
+    def __sub__(self, other: Self) -> int:
+        """
+        Subtract the age of one pet from another.
+        """
+        return self.age - other.age
