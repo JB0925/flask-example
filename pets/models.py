@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from animals.animal_types import ALL_PETS, AnimalType
 from animals.simple_animal import Animal
+from utils.errors import DatabaseNotConnectedError
 
 logging.basicConfig(
    format='%(levelname)s - %(asctime)s: %(message)s ',
@@ -25,10 +26,19 @@ def connect_db(app: Flask) -> None:
     Connect to database and create tables
     if they do not already exist.
     """
-    with app.app_context():
-        db.app = app
-        db.init_app(app)
-        db.create_all()
+    try:
+        with app.app_context():
+            db.app = app
+            db.init_app(app)
+            db.create_all()
+    except Exception as e:
+        message: str = (
+            "models.py::connect_db - Failed to connect to database: "
+            f"{e}"
+        )
+        logger.error(message, exc_info=True)
+
+        raise DatabaseNotConnectedError(message)
 
 
 class Pet(db.Model):
@@ -112,9 +122,13 @@ class Pet(db.Model):
 
         @return - Pet: The pet object that was retrieved from the database.
         If there is an error, return None.
+
+        NOTE: The use of the SQLAlchemy session "db" to query here is ok because,
+        in the app.py file, we are using the app context to initialize the db.
+        If it fails, an Exception will be thrown and caught in the app.py file.
         """
         try:
-            return Pet.query.get(id)
+            return db.session.get(Pet, id)
         except Exception as e:
             logger.error(f"Pet::get_one_pet - Failed to get pet with id {id}: {e}", exc_info=True)
             return None

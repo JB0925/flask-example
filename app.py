@@ -35,7 +35,7 @@ def get_pet(id: int):
     with the given id as a key.
     """
     try:
-        pet: Pet = Pet.query.get(id)
+        pet: Pet = Pet.get_one_pet(id)
         return jsonify(pet=pet.to_dict()), 200
     except Exception as e:
         logger.error(f"app.py::get_pet: Error trying to get one pet: {e}", exc_info=True)

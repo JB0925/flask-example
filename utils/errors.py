@@ -6,3 +6,6 @@ class InvalidTypesError(Exception):
 
 class EnvironmentNotSetError(Exception):
     pass
+
+class DatabaseNotConnectedError(Exception):
+    pass
