@@ -1,10 +1,13 @@
 from typing import Dict, List, Union
+from unittest import mock
 
 import pytest
 
 from app import app
-from pets.models import Pet
+from pets.models import Pet, connect_db
+from pets.pets import Dog
 from test_utilities import use_database
+from utils.errors import DatabaseNotConnectedError
 from utils.helpers import configure_app
 
 configure_app(app)
@@ -22,12 +25,52 @@ def test_pet_model_creation_succeeds(valid_pets) -> None:
 def test_pet_model_creation_fails(invalid_pets) -> None:
     """Test that the Pet model cannot be created."""
     for animal in invalid_pets:
-        with pytest.raises(TypeError) as err:
+        with pytest.raises(Exception) as err:
             Pet.create_pet(animal)
 
         assert "Invalid species" in str(err.value)
+        assert err.type == TypeError
 
     assert Pet.query.count() == 0
+
+@use_database
+@mock.patch("pets.models.db")
+def test_pet_model_creation_fails_even_with_valid_type(mock_db, capsys) -> None:
+    """
+    Test that the Pet model cannot be created even with a valid type.
+    This could occur because of a database issue, network issue, etc.
+
+    NOTE: We need to mock the database session here because we are 
+    trying to test what happens if there is an error with the database, etc.
+    """
+    pet = Dog(name="Fido", age=5)
+    mock_db.session.add.side_effect = Exception('Mocked exception')
+
+    try:
+        Pet.create_pet(pet)
+    
+    except Exception as err:
+        assert "Mocked exception" in str(err.value)
+        assert err.type == Exception
+        captured_text = capsys.readouterr()
+        assert "Failed to create pet" in captured_text.out
+
+    assert Pet.query.count() == 0
+
+
+@use_database
+@mock.patch("pets.models.db")
+def test_database_setup_fails(mock_connect_db, capsys) -> None:
+    mock_connect_db.init_app.side_effect = Exception('Mocked exception')
+
+    try:
+        connect_db(app)
+    
+    except Exception as err:
+        print(err)
+        assert type(err) == DatabaseNotConnectedError
+        captured_text = capsys.readouterr()
+        assert "Failed to connect to database" in captured_text.out
 
 
 @use_database
@@ -42,6 +85,64 @@ def test_get_all_pets_succeeds(valid_pets) -> None:
 
     assert len(pets) == 3
     assert all(isinstance(p, Pet) for p in pets)
+
+
+@use_database
+@mock.patch("pets.models.db")
+def test_get_all_pets_fails(mock_db, capsys) -> None:
+    """
+    Test that the Pet model cannot return all pets.
+    This could occur because of a database issue, network issue, etc.
+
+    NOTE: We need to mock the database session here because we are 
+    trying to test what happens if there is an error with the database, etc.
+    """
+    mock_db.session.query.side_effect = Exception('Mocked exception')
+
+    try:
+        Pet.get_all_pets()
+    
+    except Exception as err:
+        assert "Mocked exception" in str(err.value)
+        assert err.type == Exception
+        captured_text = capsys.readouterr()
+        assert "Failed to get all pets" in captured_text.out
+
+    assert Pet.query.count() == 0
+
+
+@use_database
+@mock.patch("pets.models.db")
+def test_get_one_pet_fails(mock_db, capsys) -> None:
+    """
+    Test that the Pet model cannot return all pets.
+    This could occur because of a database issue, network issue, etc.
+
+    NOTE: We need to mock the database session here because we are 
+    trying to test what happens if there is an error with the database, etc.
+    """
+    mock_db.session.get.side_effect = Exception('Mocked exception')
+
+    try:
+        Pet.get_one_pet(1)
+    
+    except Exception as err:
+        assert "Mocked exception" in str(err.value)
+        assert err.type == Exception
+        captured_text = capsys.readouterr()
+        assert "Failed to get one pet with id" in captured_text.out
+
+    assert Pet.query.count() == 0
+
+
+@use_database
+def test_no_pets_in_db_raises_value_error() -> None:
+    """Test that no pets in the database raises a value error."""
+    with pytest.raises(ValueError) as err:
+        Pet.get_oldest_pet()
+
+    assert "No pets in the database" in str(err.value)
+    assert err.type == ValueError
 
 
 @use_database
