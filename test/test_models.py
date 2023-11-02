@@ -115,7 +115,7 @@ def test_get_all_pets_fails(mock_db, capsys) -> None:
 @mock.patch("pets.models.db")
 def test_get_one_pet_fails(mock_db, capsys) -> None:
     """
-    Test that the Pet model cannot return all pets.
+    Test that the Pet model cannot return a pet.
     This could occur because of a database issue, network issue, etc.
 
     NOTE: We need to mock the database session here because we are 
@@ -164,6 +164,31 @@ def test_get_one_pet_succeeds(valid_pets) -> None:
 
 
 @use_database
+@mock.patch("pets.models.Pet")
+def test_get_all_pets_fails(mock_db, capsys) -> None:
+    """
+    Test that the Pet model cannot return all pets.
+    This could occur because of a database issue, network issue, etc.
+
+    NOTE: We need to mock the database session here because we are 
+    trying to test what happens if there is an error with the database, etc.
+    """
+    mock_db.query.side_effect = Exception('Mocked exception')
+
+    try:
+         p = Pet.get_all_pets()
+    
+    except Exception as err:
+        assert "Mocked exception" in str(err.value)
+        assert err.type == Exception
+        captured_text = capsys.readouterr()
+        assert "Failed to get all pets" in captured_text.out
+        assert p == []
+
+    assert Pet.query.count() == 0
+
+
+@use_database
 def test_pet_is_converted_to_dictionary(valid_pets) -> None:
     """Test that a pet can be converted to a dictionary."""
     for animal in valid_pets:
@@ -195,3 +220,29 @@ def test_get_oldest_pet_succeeds(valid_pets) -> None:
     assert pet.name == "Fido"
     assert pet.age == 5
     assert pet.species == 1
+
+def test_repr() -> None:
+    """Test that the Pet model repr is accurate."""
+    pet = Pet(name="Fido", age=5, species=1)
+    pet.id = 1
+    assert repr(pet) == "<Pet 1: Name: Fido, Age: 5, Species Type: 1>"
+
+def test_str() -> None:
+    """Test that the Pet model str is accurate."""
+    pet = Pet(name="Fido", age=5, species=1)
+    assert str(pet) == "<Pet Fido is a 5 year old dog.>"
+
+def test_eq() -> None:
+    """Test that the Pet model eq is accurate."""
+    pet1 = Pet(name="Fido", age=5, species=1)
+    pet2 = Pet(name="Fido", age=5, species=1)
+    pet3 = Pet(name="Fido", age=5, species=2)
+    assert pet1 == pet2
+    assert pet1 != pet3
+
+def test_sub() -> None:
+    """Test that the Pet model sub is accurate."""
+    pet1 = Pet(name="Fido", age=5, species=1)
+    pet2 = Pet(name="Fido", age=10, species=1)
+    assert pet2 - pet1 == 5
+    assert pet1 - pet2 == -5

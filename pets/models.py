@@ -45,6 +45,13 @@ class Pet(db.Model):
     """
     Generic class to write all pets
     to the database, and read from it as well.
+
+    Attributes:
+        id - int: The id of the pet.
+        name - str: The name of the pet.
+        age - int: The age of the pet.
+        species - AnimalType: The species of the pet. Can only be one of the
+        following: DOG, CAT, BIRD.
     """
 
     __tablename__ = "pets"
@@ -159,13 +166,18 @@ class Pet(db.Model):
         """
         Return a string representation of the pet object.
         """
-        return f"<Pet {self.id}: {self.name}, {self.age}, {self.species}>"
+        return f"<Pet {self.id}: Name: {self.name}, Age: {self.age}, Species Type: {self.species}>"
     
     def __str__(self) -> str:
         """
         Return a string representation of the pet object.
         """
-        return f"<Pet {self.name}, {self.age}, {self.species}>"
+        species_map: Dict[int, str] = {
+            1: "dog",
+            2: "cat",
+            3: "bird"
+        }
+        return f"<Pet {self.name} is a {self.age} year old {species_map.get(self.species)}.>"
     
     def __eq__(self, other: Self) -> bool:
         """
