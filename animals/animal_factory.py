@@ -1,7 +1,7 @@
-from utils.constants import Constants
 from animals.other_animals import Lion, Shark
-from pets.pets import Bird, Cat, Dog
 from animals.simple_animal import Animal
+from pets.pets import Bird, Cat, Dog
+from utils.constants import Constants
 
 
 class AnimalFactory:
