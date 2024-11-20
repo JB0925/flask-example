@@ -1,6 +1,7 @@
 import logging
 import sys
 
+from http import HTTPStatus
 from logging import Logger
 from typing import Dict, List, Union
 
@@ -36,10 +37,10 @@ def get_pet(id: int):
     """
     try:
         pet: Pet = Pet.get_one_pet(id)
-        return jsonify(pet=pet.to_dict()), 200
+        return jsonify(pet=pet.to_dict()), HTTPStatus.OK
     except Exception as e:
         logger.error(f"app.py::get_pet: Error trying to get one pet: {e}", exc_info=True)
-        return jsonify(error=f"An error occurred when getting your pet: {e}"), 400
+        return jsonify(error=f"An error occurred when getting your pet: {e}"), HTTPStatus.BAD_REQUEST
 
 @app.route('/pets', methods=['GET'])
 def get_pets():
@@ -48,10 +49,10 @@ def get_pets():
     """
     try:
         pets: List[Animal] = Pet.get_all_pets()
-        return jsonify(pets=[p.to_dict() for p in pets]), 200
+        return jsonify(pets=[p.to_dict() for p in pets]), HTTPStatus.OK
     except Exception as e:
         logger.error(f"app.py::get_pets: Error trying to get all pets: {e}", exc_info=True)
-        return jsonify(error=f"An error occurred when getting all pets: {e}"), 500
+        return jsonify(error=f"An error occurred when getting all pets: {e}"), HTTPStatus.INTERNAL_SERVER_ERROR
 
 @app.route('/pets', methods=['POST'])
 def create_pet():
@@ -64,10 +65,10 @@ def create_pet():
 
         animal: Animal = factory.create_animal(**data)
         pet: Animal = Pet.create_pet(animal)  # stores in db and returns pet object
-        return jsonify(pet=pet.to_dict()), 201
+        return jsonify(pet=pet.to_dict()), HTTPStatus.CREATED
     except Exception as e:
         logger.error(f"app.py::create_pet: Error trying to create a pet: {e}", exc_info=True)
-        return jsonify(error=f"An error occurred when creating your pet: {e}"), 400
+        return jsonify(error=f"An error occurred when creating your pet: {e}"), HTTPStatus.BAD_REQUEST
     
 @app.route('/pets/oldest', methods=['GET'])
 def get_oldest_pet():
@@ -76,7 +77,7 @@ def get_oldest_pet():
     """
     try:
         pet: Animal = Pet.get_oldest_pet()
-        return jsonify(pet=pet.to_dict()), 200
+        return jsonify(pet=pet.to_dict()), HTTPStatus.OK
     except Exception as e:
         logger.error(f"app.py::get_oldest_pet: Error trying to get oldest pet: {e}", exc_info=True)
-        return jsonify(error=f"An error occurred when getting the oldest pet: {e}"), 500
+        return jsonify(error=f"An error occurred when getting the oldest pet: {e}"), HTTPStatus.INTERNAL_SERVER_ERROR
