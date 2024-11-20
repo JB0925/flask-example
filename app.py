@@ -40,7 +40,7 @@ def get_pet(id: int):
         return jsonify(pet=pet.to_dict()), HTTPStatus.OK
     except Exception as e:
         logger.error(f"app.py::get_pet: Error trying to get one pet: {e}", exc_info=True)
-        return jsonify(error=f"An error occurred when getting your pet: {e}"), HTTPStatus.BAD_REQUEST
+        return jsonify(error="An error occurred when getting your pet"), HTTPStatus.INTERNAL_SERVER_ERROR
 
 @app.route('/pets', methods=['GET'])
 def get_pets():
@@ -52,7 +52,7 @@ def get_pets():
         return jsonify(pets=[p.to_dict() for p in pets]), HTTPStatus.OK
     except Exception as e:
         logger.error(f"app.py::get_pets: Error trying to get all pets: {e}", exc_info=True)
-        return jsonify(error=f"An error occurred when getting all pets: {e}"), HTTPStatus.INTERNAL_SERVER_ERROR
+        return jsonify(error="An error occurred when getting all pets"), HTTPStatus.INTERNAL_SERVER_ERROR
 
 @app.route('/pets', methods=['POST'])
 def create_pet():
@@ -68,7 +68,7 @@ def create_pet():
         return jsonify(pet=pet.to_dict()), HTTPStatus.CREATED
     except Exception as e:
         logger.error(f"app.py::create_pet: Error trying to create a pet: {e}", exc_info=True)
-        return jsonify(error=f"An error occurred when creating your pet: {e}"), HTTPStatus.BAD_REQUEST
+        return jsonify(error="An error occurred when creating your pet"), HTTPStatus.BAD_REQUEST
     
 @app.route('/pets/oldest', methods=['GET'])
 def get_oldest_pet():
@@ -80,4 +80,4 @@ def get_oldest_pet():
         return jsonify(pet=pet.to_dict()), HTTPStatus.OK
     except Exception as e:
         logger.error(f"app.py::get_oldest_pet: Error trying to get oldest pet: {e}", exc_info=True)
-        return jsonify(error=f"An error occurred when getting the oldest pet: {e}"), HTTPStatus.INTERNAL_SERVER_ERROR
+        return jsonify(error="An error occurred when getting the oldest pet"), HTTPStatus.INTERNAL_SERVER_ERROR
